@@ -52,11 +52,12 @@ class ExampleBatteryService(ExampleBatteryServiceBase):
             raise ValueError(f"Battery {esdl_id} cannot be charged with {amount_to_charge} W at time {simulation_time}. Current charge: {self.current_charge[esdl_id]} Wh, Max capacity: {self.max_capacity[esdl_id]} Wh")
         self.current_charge[esdl_id] += amount_to_charge_joules 
         state_of_charge = (self.current_charge[esdl_id] / self.max_capacity[esdl_id]) * 100
-        LOGGER.debug(f"Battery {esdl_id} charged with {amount_to_charge} W at time {simulation_time}. New state of charge: {state_of_charge} %")
+        LOGGER.debug(f"Battery {esdl_id} charged with {amount_to_charge} W at time {simulation_time}. New state of charge: {state_of_charge} % with simulation id: {self.influx_connector.simulation_id}")
         self.influx_connector.set_time_step_data_point(esdl_id, "StateOfCharge", simulation_time, state_of_charge)
 
 if __name__ == "__main__":
 
     helics_simulation_executor = ExampleBatteryService()
     helics_simulation_executor.start_simulation()
+    LOGGER.debug("Stopping calculation service")
     helics_simulation_executor.stop_simulation()
