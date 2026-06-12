@@ -46,7 +46,22 @@
                     "unit" : "W"
                 }
             ],
+            "outputs" : [ ]
+        },
+        {
+            "name": "send_soc",
+            "description" : "sends the state of charge of the battery",
+            "time_period_in_seconds" : 900,
+            "offset_in_seconds" : 0,
+            "inputs" : [
+            ],
             "outputs" : [
+                {
+                    "name" : "battery_soc",
+                    "data_type" : "DOUBLE",
+                    "description" : "The state-of-charge of the battery in joules",
+                    "unit" : "J"
+                }
             ]
         }
     ]

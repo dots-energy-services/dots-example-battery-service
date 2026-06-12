@@ -7,3 +7,7 @@ class MaxChargeAndDischargeOutput:
     max_discharge_active_power : float | None = None
 
 
+@dataclass
+class SendSocOutput:
+    battery_soc : float | None = None
+

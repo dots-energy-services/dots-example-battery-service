@@ -8,4 +8,4 @@ COPY pyproject.toml ./
 COPY README.md ./
 
 RUN pip install ./
-ENTRYPOINT ["python3", "src/ExampleBatteryService/examplebatteryservice.py"]
+ENTRYPOINT ["python3", "src/ExampleBatteryService/example_battery_service.py"]
