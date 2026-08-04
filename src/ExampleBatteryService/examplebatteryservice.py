@@ -45,15 +45,15 @@ class ExampleBatteryService(ExampleBatteryServiceBase):
         return MaxChargeAndDischargeOutput(max_amount_to_charge_watts, max_amount_to_discharge_watts)
 
 
-    def charge_battery(self, param_dict : dict, simulation_time : datetime, time_step_number : TimeStepInformation, esdl_id : EsdlId, energy_system : EnergySystem):
+def charge_battery(self, param_dict : dict, simulation_time : datetime, time_step_number : TimeStepInformation, esdl_id : EsdlId, energy_system : EnergySystem):
         amount_to_charge  = get_single_param_with_name(param_dict, "active_power_to_charge")
         amount_to_charge_joules = self.max_charge_and_discharge_period_seconds * self.charge_efficiency[esdl_id] * amount_to_charge
-        if self.current_charge[esdl_id] + amount_to_charge > self.max_capacity[esdl_id] or self.current_charge[esdl_id] + amount_to_charge < 0:
-            raise ValueError(f"Battery {esdl_id} cannot be charged with {amount_to_charge} W at time {simulation_time}. Current charge: {self.current_charge[esdl_id]} Wh, Max capacity: {self.max_capacity[esdl_id]} Wh")
-        self.current_charge[esdl_id] += amount_to_charge_joules 
+        proposed_charge = self.current_charge[esdl_id] + amount_to_charge_joules
+        self.current_charge[esdl_id] = max(0.0, min(proposed_charge, self.max_capacity[esdl_id]))
         state_of_charge = (self.current_charge[esdl_id] / self.max_capacity[esdl_id]) * 100
         LOGGER.debug(f"Battery {esdl_id} charged with {amount_to_charge} W at time {simulation_time}. New state of charge: {state_of_charge} %")
         self.influx_connector.set_time_step_data_point(esdl_id, "StateOfCharge", simulation_time, state_of_charge)
+        
 
 if __name__ == "__main__":
 
