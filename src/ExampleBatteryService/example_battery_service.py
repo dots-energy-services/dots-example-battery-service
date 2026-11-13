@@ -30,14 +30,14 @@ class ExampleBatteryService(ExampleBatteryServiceBase):
 
     def max_charge_and_discharge(self, param_dict : dict, simulation_time : datetime, time_step_number : TimeStepInformation, esdl_id : EsdlId, energy_system : EnergySystem):
         max_amount_to_charge_joules = self.max_charge_and_discharge_period_seconds * self.charge_efficiency[esdl_id] * self.max_charge_rate[esdl_id]
-        max_amount_to_discharge_joules = self.max_charge_and_discharge_period_seconds * self.discharge_efficiency[esdl_id] * self.max_discharge_rate[esdl_id]
+        max_amount_to_discharge_joules = self.max_charge_and_discharge_period_seconds * self.max_discharge_rate[esdl_id] / self.discharge_efficiency[esdl_id]
         if self.current_charge[esdl_id] + max_amount_to_charge_joules > self.max_capacity[esdl_id]:
             max_amount_to_charge_joules = abs(self.max_capacity[esdl_id] - self.current_charge[esdl_id])
         if self.current_charge[esdl_id] - max_amount_to_discharge_joules < 0:
             max_amount_to_discharge_joules = -self.current_charge[esdl_id]
 
-        max_amount_to_charge_watts = max_amount_to_charge_joules / self.max_charge_and_discharge_period_seconds
-        max_amount_to_discharge_watts = max_amount_to_discharge_joules / self.max_charge_and_discharge_period_seconds
+        max_amount_to_charge_watts = max_amount_to_charge_joules / (self.max_charge_and_discharge_period_seconds * self.charge_efficiency[esdl_id])
+        max_amount_to_discharge_watts = max_amount_to_discharge_joules * self.discharge_efficiency[esdl_id] / self.max_charge_and_discharge_period_seconds
 
         if max_amount_to_discharge_watts > 0:
             max_amount_to_discharge_watts = -max_amount_to_discharge_watts
@@ -47,9 +47,14 @@ class ExampleBatteryService(ExampleBatteryServiceBase):
 
     def charge_battery(self, param_dict : dict, simulation_time : datetime, time_step_number : TimeStepInformation, esdl_id : EsdlId, energy_system : EnergySystem):
         amount_to_charge  = get_single_param_with_name(param_dict, "active_power_to_charge")
-        amount_to_charge_joules = self.max_charge_and_discharge_period_seconds * self.charge_efficiency[esdl_id] * amount_to_charge
-        if self.current_charge[esdl_id] + amount_to_charge > self.max_capacity[esdl_id] or self.current_charge[esdl_id] + amount_to_charge < 0:
-            raise ValueError(f"Battery {esdl_id} cannot be charged with {amount_to_charge} W at time {simulation_time}. Current charge: {self.current_charge[esdl_id]} Wh, Max capacity: {self.max_capacity[esdl_id]} Wh")
+        # amount_to_charge_joules = self.max_charge_and_discharge_period_seconds * self.charge_efficiency[esdl_id] * amount_to_charge
+        # Correct application of discharge efficiency:
+        if amount_to_charge >= 0: # charging: only eta_ch of the terminal energy ends up in storage
+            amount_to_charge_joules = self.max_charge_and_discharge_period_seconds * self.charge_efficiency[esdl_id] * amount_to_charge
+        else: # discharging: storage loses terminal energy / eta_dis
+            amount_to_charge_joules = self.max_charge_and_discharge_period_seconds * amount_to_charge / self.discharge_efficiency[esdl_id]
+        if self.current_charge[esdl_id] + amount_to_charge_joules > self.max_capacity[esdl_id] + 1 or self.current_charge[esdl_id] + amount_to_charge_joules < -1:
+            raise ValueError(f"Battery {esdl_id} cannot be charged with {amount_to_charge} W at time {simulation_time}. Current charge: {self.current_charge[esdl_id]} J, Max capacity: {self.max_capacity[esdl_id]} J")
         self.current_charge[esdl_id] += amount_to_charge_joules 
         state_of_charge = (self.current_charge[esdl_id] / self.max_capacity[esdl_id]) * 100
         LOGGER.debug(f"Battery {esdl_id} charged with {amount_to_charge} W at time {simulation_time}. New state of charge: {state_of_charge} %")
