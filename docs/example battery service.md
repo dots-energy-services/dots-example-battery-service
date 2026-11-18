@@ -21,6 +21,13 @@ sends the max amount of active power the battery can charge and discharge
 |Name            |esdl_type            |data_type            |unit            |description            |
 |----------------|---------------------|---------------------|----------------|-----------------------|
 |active_power_to_charge|EConnection|DOUBLE|W|The amount of active power produced or consumed by the Battery > 0 means charging, < 0 means discharging|
+### send_soc 
+
+sends the state of charge of the battery
+#### Output values
+|Name             |data_type             |unit             |description             |
+|-----------------|----------------------|-----------------|------------------------|
+|battery_soc|DOUBLE|J|The state-of-charge of the battery in joules|
 
 ### Relevant links
 |Link             |description             |

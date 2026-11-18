@@ -7,8 +7,9 @@ from dataclasses import dataclass
 
 from dots_infrastructure import CalculationServiceHelperFunctions
 
-from ExampleBatteryService.examplebatteryservice import ExampleBatteryService
 from dots_infrastructure.test_infra.InfluxDBMock import InfluxDBMock
+
+from ExampleBatteryService.example_battery_service import ExampleBatteryService
 
 
 BROKER_TEST_PORT = 23404
@@ -28,7 +29,7 @@ class ChargeTestcase:
     amount_to_charge: float
 
 def simulator_environment_e_connection():
-    return SimulatorConfiguration("EConnection", [TEST_ID], "Mock-Econnection", "127.0.0.1", BROKER_TEST_PORT, "test-id", SIMULATION_DURATION_IN_SECONDS, START_DATE_TIME, "test-host", "test-port", "test-username", "test-password", "test-database-name", h.HelicsLogLevel.DEBUG, ["PVInstallation", "EConnection"])
+    return SimulatorConfiguration("Battery", [TEST_ID], "Mock-Battery", "127.0.0.1", BROKER_TEST_PORT, "test-id", SIMULATION_DURATION_IN_SECONDS, START_DATE_TIME, "test-host", "test-port", "test-username", "test-password", "test-database-name", h.HelicsLogLevel.DEBUG, ["PVInstallation", "EConnection"])
 
 class Test(unittest.TestCase):
 
